@@ -1,0 +1,37 @@
+from multiprocessing import Pool,Process,Queue
+from channel_extract import channel_list
+from page_parsing import get_links_from,get_item_info
+import pymongo
+
+client = pymongo.MongoClient("localhost",27017)
+ceshi = client["ceshi"]
+url_list = ceshi["url_list3"]
+item_info = ceshi["item_info3"]
+
+def get_all_links_from(q):
+    for i in channel_list.split():
+        for num in range(1,101):
+            t = get_links_from(i,num)
+            q.put(t)
+def get_all_info_from(q):
+    while True:
+        c = q.get(True)
+        get_item_info(c)
+
+
+if __name__ == "__main__":
+
+    q = Queue()
+    pw = Process(target=get_all_links_from, args=(q,))
+    pr = Process(target=get_all_info_from, args=(q,))
+    # 启动子进程pw，写入:
+    pw.start()
+    # 启动子进程pr，读取:
+    pr.start()
+    # 等待pw结束:
+
+    # pr进程里是死循环，无法等待其结束，只能强行终止:
+
+
+
+
